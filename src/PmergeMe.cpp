@@ -65,11 +65,10 @@ std::ostream& operator<<(std::ostream& os, const std::stack<T>& d)
     return os;
 }
 
-//template to convert input vector of ints to vector or deque of fjNums, used for sorting
-template <typename Container>
-Container<fjNum> PmergeMe::convertToChain()
+template <typename Container> //template to convert input vector of ints to vector or deque of fjNums, used for sorting
+Container PmergeMe::convertToChain()
 {
-    container chain;
+    Container chain;
     for (size_t i = 0; i < input.size(); ++i)
     {
         chain.push_back(fjNum(input.at(i)));
@@ -92,6 +91,14 @@ int PmergeMe::run ()
         std::cout << "Insertion order: " << this->insertionOrder << std::endl;
 
         std::cout << "Before (Raw input): " << input << std::endl;
+
+        sortV = convertToChain<std::vector<fjNum> >();
+        std::cout << "Before (vector of fjNums): ";
+        for (size_t i = 0; i < sortV.size(); ++i)
+        {
+            std::cout << sortV.at(i).getNumber() << " ";
+        }
+        std::cout << std::endl;
         
         clock_t startV = clock();
         this->sortVector();
@@ -103,11 +110,11 @@ int PmergeMe::run ()
         // clock_t endD = clock();
         // //std::cout << "After (deque) : " << sortD << std::endl;
 
-        double timeV = (static_cast<double>(endV - startV) / CLOCKS_PER_SEC) * MILLION;
+        //double timeV = (static_cast<double>(endV - startV) / CLOCKS_PER_SEC) * MILLION;
         //double timeD = (static_cast<double>(endD - startD) / CLOCKS_PER_SEC) * MILLION;
 
-        std::cout  << "Time to process a range of " << size << " elements with std::vector : " 
-                   << std::fixed << timeV << " us" << std::endl;
+        //std::cout  << "Time to process a range of " << size << " elements with std::vector : " 
+         //          << std::fixed << timeV << " us" << std::endl;
         // std::cout  << "Time to process a range of " << size << " elements with std::deque  : " 
         //            << std::fixed << timeD << " us" << std::endl;
     }
@@ -252,64 +259,63 @@ void PmergeMe::sortVector()
 {
     if (input.size() < 2)
     {
-        sortV = input;
+        sortV.at(0).setNumber(input.at(0));
         return ;
     }
 
     bool        hasLaggard = false;
-    int         laggard = 0;
+    fjNum       laggard_value(0);
     
     if (input.size() % 2 != 0)
     {
         hasLaggard = true;
-        laggard = input.back();
+        laggard_value.setNumber(input.back());
         input.pop_back();
     }
     
-    std::vector <PmergeMe::pair> vChain;
+    std::vector <PmergeMe::pair> vPairChain;
     for (size_t i = 0; i < input.size(); i+=2)
     {
-        vChain.push_back(mkPair(input.at(i), input.at(i + 1)));
+         vPairChain.push_back(mkPair(fjNum(input.at(i)), fjNum(input.at(i + 1))));
     }
 
-    sortV = FJSort<std::vector<int> >(vChain);
-    if (hasLaggard and !sortV.empty())
-    {
-        // insert laggard into sortV using binary search
-        std::vector<int>::iterator pos = std::lower_bound(sortV.begin(), sortV.end(), laggard);
-        sortV.insert(pos, laggard);
-    }   
+    sortV = FJSort<std::vector<fjNum> >(vPairChain);
+    if (hasLaggard and !sortV.empty()) // insert laggard into sortV using binary search
+    {   
+         typename std::vector<fjNum>::iterator pos = std::lower_bound(sortV.begin(), sortV.end(), laggard_value);
+         sortV.insert(pos, laggard_value);
+    }
 }
 
 void PmergeMe::sortDeque()
 {
-    if (input.size() < 2)
-    {
-        sortD.assign(input.begin(), input.end());
-        return ;
-    }
+    // if (input.size() < 2)
+    // {
+    //     sortD.assign(input.begin(), input.end());
+    //     return ;
+    // }
 
-    bool        hasLaggard = false;
-    int         laggard = 0;
+    // bool        hasLaggard = false;
+    // int         laggard = 0;
     
-    if (input.size() % 2 != 0)
-    {
-        hasLaggard = true;
-        laggard = input.back();
-        input.pop_back();
-    }
+    // if (input.size() % 2 != 0)
+    // {
+    //     hasLaggard = true;
+    //     laggard = input.back();
+    //     input.pop_back();
+    // }
     
-    std::vector <PmergeMe::pair> vChain;
-    for (size_t i = 0; i < input.size(); i+=2)
-    {
-        vChain.push_back(mkPair(input.at(i), input.at(i + 1)));
-    }
+    // std::vector <PmergeMe::pair> vChain;
+    // for (size_t i = 0; i < input.size(); i+=2)
+    // {
+    //     vChain.push_back(mkPair(input.at(i), input.at(i + 1)));
+    // }
 
-    sortD = FJSort<std::deque<int> >(vChain);
-    if (hasLaggard and !sortD.empty())
-    {
-        // insert laggard into sortD using binary search
-        std::deque<int>::iterator pos = std::lower_bound(sortD.begin(), sortD.end(), laggard);
-        sortD.insert(pos, laggard);
-    }   
+    // sortD = FJSort<std::deque<int> >(vChain);
+    // if (hasLaggard and !sortD.empty())
+    // {
+    //     // insert laggard into sortD using binary search
+    //     std::deque<int>::iterator pos = std::lower_bound(sortD.begin(), sortD.end(), laggard);
+    //     sortD.insert(pos, laggard);
+    // }   
 }
