@@ -215,7 +215,7 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
     }
 
     // 4. recurse: FJSort(new pairs)
-    mainChain = FJSort <Container>(newPairs);
+    mainChain = FJSort <Container>(newPairs); //mainChain comes back sorted
 
     // 5. get insert order for pend elements, which is based on Jacobsthal sequence.
     //The number of items we recieved from mainChain will be the number of Jocobsthal number we need.
@@ -226,8 +226,6 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
             localInsertationOrder.push_back(insertionOrder[i]);
     }
     // 6. insert remaining pend elements into mainChain using binary search
-    mainChain = FJSort<Container>(newPairs); //mainChain comes back sorted
-
     // snapshot originals before any insertions -> Jacobsthal indices index into this
     Container originals = mainChain;
 
@@ -244,8 +242,10 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
         fjNum beta = originals.at(k).getPending().top();  // the loser that originals[k] beat
         originals.at(k).pop_last_pending(); // remove it from pending since we're about to insert it into mainChain
 
+
         // originals[k] is the upper bound: beta < originals[k] is already known, no search needed
         typename Container::iterator upperBound = mainChain.begin() + currentIdx[k];
+        mainChain.at(currentIdx[k]).pop_last_pending(); // pop the pending element from the original before we do the binary search
         // binary search only within [begin, upperBound) — comparisons against unknown elements
         typename Container::iterator pos = std::lower_bound(mainChain.begin(), upperBound, beta);
 
