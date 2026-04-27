@@ -19,7 +19,7 @@ public:
     //const std::deque<int>& getSortD() const;
 private:
     std::vector<int> input;
-    std::vector<int> insertionOrder;
+    std::vector<size_t> insertionOrder;
     std::vector<fjNum> sortV;
     //std::deque<fjNum>  sortD;
 
@@ -33,7 +33,7 @@ private:
     template <typename Container> Container FJSort(std::vector<PmergeMe::pair> &receivedPairs);
     template <typename Container> Container convertToChain(); //convert int vector to fjNum chain
     PmergeMe::pair mkPair(fjNum a, fjNum b);
-    std::vector<int> generateOrder(size_t n);
+    std::vector<size_t> generateOrder(size_t n);
     void sortVector();
     void sortDeque();
 };

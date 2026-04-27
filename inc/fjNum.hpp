@@ -39,6 +39,12 @@ public:
         return os;
     }
 
+    void pop_last_pending()
+    {
+        if (!pending.empty())
+            pending.pop();
+    }
+
 private:    
     int                 number;
     std::stack<fjNum>   pending;
