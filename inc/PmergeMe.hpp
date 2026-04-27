@@ -4,34 +4,35 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include "fjNum.hpp"
 class PmergeMe
 {
 public:
-    PmergeMe() : input(), sortV(), sortD(){}
-    PmergeMe(const std::vector<int>& input) : input(input), sortV(), sortD() {}
+    PmergeMe();
+    PmergeMe(const std::vector<int>& input);
     PmergeMe(PmergeMe const &src);
     PmergeMe &operator=(PmergeMe const &rhs);
     ~PmergeMe(){};
-
+    
     int run ();
-    const std::vector<int>& getSortV() const;
-    const std::deque<int>& getSortD() const;
+    const std::vector<fjNum>& getSortV() const;
+    //const std::deque<int>& getSortD() const;
 private:
     std::vector<int> input;
-    std::vector<int> insertOrder;
-    std::vector<int> sortV;
-    std::deque<int>  sortD;
-    
+    std::vector<int> insertionOrder;
+    std::vector<fjNum> sortV;
+    //std::deque<fjNum>  sortD;
+
+    bool errorFlag;
     struct pair
     {
-        int alpha;
-        int beta;
+        fjNum alpha;
+        fjNum beta;
     };
 
-    template <typename Container>
-    Container FJSort(std::vector<PmergeMe::pair> &receivedPairs);
-
-    PmergeMe::pair mkPair(int a, int b);
+    template <typename Container> Container FJSort(std::vector<PmergeMe::pair> &receivedPairs);
+    template <typename Container> Container convertToChain(); //convert int vector to fjNum chain
+    PmergeMe::pair mkPair(fjNum a, fjNum b);
     std::vector<int> generateOrder(size_t n);
     void sortVector();
     void sortDeque();

@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            //std::cout << "Vector and deque are sorted successfully" << std::endl;
+            std::cout << "Vector and deque are sorted successfully" << std::endl;
         }
     }
     catch (const std::exception &e)

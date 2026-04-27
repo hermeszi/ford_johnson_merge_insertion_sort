@@ -6,7 +6,7 @@
 #    By: myuen <myuen@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/17 14:53:29 by myuen             #+#    #+#              #
-#    Updated: 2026/04/07 18:24:03 by myuen            ###   ########.fr        #
+#    Updated: 2026/04/27 14:53:09 by myuen            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 SRCS =	$(SRC_DIR)/main.cpp \
+		$(SRC_DIR)/fjNum.cpp \
 		$(SRC_DIR)/PmergeMe.cpp \
 
 
