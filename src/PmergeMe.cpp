@@ -136,14 +136,14 @@ PmergeMe::pair PmergeMe::mkPair(fjNum a, fjNum b)
         newPair.alpha = a;
         newPair.beta = b;
 
-        newPair.alpha.addPending(b.getNumber());
+        newPair.alpha.addPending(b);
     }
     else
     {
         newPair.alpha = b;
         newPair.beta = a;
 
-        newPair.alpha.addPending(a.getNumber());
+        newPair.alpha.addPending(a);
     }
     return newPair;
 }
@@ -201,7 +201,8 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
     PmergeMe::pair laggard;
     bool hasLaggard = false;
     if (receivedPairs.size() % 2 != 0)
-    {   hasLaggard = true;
+    {   
+        hasLaggard = true;
         laggard = receivedPairs.back();
         receivedPairs.pop_back();
     }
@@ -210,26 +211,30 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
     std::vector<PmergeMe::pair> newPairs;
     for (size_t i = 0; i < receivedPairs.size(); i+=2)
     {        
-        newPairs.push_back(mkPair(receivedPairs.at(i).alpha, receivedPairs.at(i + 1).alpha));
+        newPairs.push_back(mkPair(receivedPairs.at(i), receivedPairs.at(i + 1)));
     }
 
     // 4. recurse: FJSort(new pairs)
     mainChain = FJSort <Container>(newPairs);
 
-    // 5. get insert order for pend elements, which is based on Jacobsthal sequence
-    std::vector<int> localOrder;
-    for (size_t i = 0; i < insertionOrder.size(); ++i)
+    // 5. get insert order for pend elements, which is based on Jacobsthal sequence.
+    //The number of items we recieved from mainChain will be the number of Jocobsthal number we need.
+    std::vector<int> localInsertationOrder;
+    for (size_t i = 0; i < insertionInsertationOrder.size(); ++i)
     {
-        if (static_cast<size_t>(insertionOrder[i]) < receivedPairs.size())
-            localOrder.push_back(insertionOrder[i]);
+        if (static_cast<size_t>(insertionOrder[i]) < mainChain.size())
+            localInsertationOrder.push_back(insertionOrder[i]);
     }
     // 6. insert remaining pend elements into mainChain using binary search
-    while (!localOrder.empty())
+    tempMainChain = mainChain; //so we don't mess with the order of mainChain while inserting
+    //we need a algo/data structure to keep track of each new insertation id,
+    //and make a function ignore those number when we count the jacobsothal sequence, since the jacobsthal sequence is based on the original mainChain size, but as we insert new elements, the size of mainChain changes, so we need to ignore the new elements when we count the jacobsthal sequence. We can use a set to keep track of the new insertation id, and make a function ignore those number when we count the jacobsthal sequence in the mainchain.
+    while (!localInsertationOrder.empty())
     {   
-        int currentIndex = localOrder.front();
-        localOrder.erase(localOrder.begin());
-        PmergeMe::pair currentPair = receivedPairs.at(currentIndex);
-        typename Container::iterator upperBound = std::lower_bound(mainChain.begin(), mainChain.end(), currentPair.alpha);
+        size_t currentIndex = localInsertationOrder.front();
+        localInsertationOrder.erase(localInsertationOrder.begin());
+        PmergeMe::pair currentPair = mainChain.at(currentIndex);
+        
         typename Container::iterator pos = std::lower_bound(mainChain.begin(), upperBound, currentPair.beta);
         mainChain.insert(pos, currentPair.beta);
     }

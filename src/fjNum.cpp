@@ -28,7 +28,7 @@ const int & fjNum::getNumber() const
     return this->number;
 }
 
-const std::stack<int>& fjNum::getPending() const
+const std::stack<fjNum>& fjNum::getPending() const
 {
     return this->pending;
 }
@@ -37,7 +37,7 @@ void fjNum::setNumber(int n)
 {
     this->number = n;
 }
-void fjNum::addPending(int n)
+void fjNum::addPending(fjNum n)
 {
     this->pending.push(n);
 }

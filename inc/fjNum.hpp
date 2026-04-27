@@ -13,10 +13,10 @@ public:
     ~fjNum();
 
     const int & getNumber() const;
-    const std::stack<int>& getPending() const;
+    const std::stack<fjNum>& getPending() const;
 
     void setNumber(int n);
-    void addPending(int n);
+    void addPending(fjNum n);
 
     bool operator < (const fjNum& other) const
     {
@@ -40,8 +40,8 @@ public:
     }
 
 private:    
-    int             number;
-    std::stack<int> pending;
+    int                 number;
+    std::stack<fjNum>   pending;
 };
 
 #endif
