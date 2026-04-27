@@ -2,12 +2,26 @@
 #include <sstream>
 #include <cstdlib>
 #include <exception>
+#include <algorithm>
 #include <string>
 #include <ctime>
 #include <iomanip>
 #include "fjNum.hpp"
 #include "PmergeMe.hpp"
 #define MILLION 1000000
+
+size_t PmergeMe::comparisonCount = 0;
+
+struct CountingComparator
+{
+    size_t& count;
+    CountingComparator(size_t& c) : count(c) {}
+    bool operator()(const fjNum& a, const fjNum& b) const
+    {
+        ++count;
+        return a < b;
+    }
+};
 
 const std::vector<fjNum>& PmergeMe::getSortV() const { return sortV; }
 //const std::deque<int>& PmergeMe::getSortD() const { return sortD; }
@@ -217,40 +231,104 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
     // 4. recurse: FJSort(new pairs)
     mainChain = FJSort <Container>(newPairs); //mainChain comes back sorted
 
+    /*=========debug message==============*/
+    std::cout << "\n--- FJSort level ---\n";
+    std::cout << "mainChain after recursion: ";
+    for (size_t i = 0; i < mainChain.size(); ++i)
+        std::cout << "[" << i << "]=" << mainChain[i].getNumber() << " ";
+    std::cout << "\n";
+
+
     // 5. get insert order for pend elements, which is based on Jacobsthal sequence.
     //The number of items we recieved from mainChain will be the number of Jocobsthal number we need.
     std::vector<int> localInsertationOrder;
     for (size_t i = 0; i < this->insertionOrder.size(); ++i)
     {
-        if (static_cast<size_t>(this->insertionOrder[i]) < mainChain.size())
+        if (static_cast<size_t>(this->insertionOrder[i]) < receivedPairs.size())
             localInsertationOrder.push_back(insertionOrder[i]);
     }
     // 6. insert remaining pend elements into mainChain using binary search
     // snapshot originals before any insertions -> Jacobsthal indices index into this
-    Container originals = mainChain;
+    
+    //retrive the original fjNums that we need to insert from the pairs, and store them in the same order as mainChain so we can track where they are as we insert
+    std::vector<fjNum> pending(mainChain.size());
+    std::vector<bool> hasPending(mainChain.size(), false);
 
+    for (size_t i = 0; i < mainChain.size(); ++i)
+    {
+        std::cout << "mainChain[" << i << "] alpha="
+                << mainChain[i].getNumber();
+
+        if (!mainChain.at(i).getPending().empty())
+        {
+            std::cout << " has pending beta="
+                    << mainChain.at(i).getPending().top().getNumber()
+                    << "\n";
+
+            pending[i] = mainChain.at(i).getPending().top();
+            hasPending[i] = true;
+            mainChain.at(i).pop_last_pending();
+        }
+        else
+        {
+            std::cout << " has NO pending\n";
+        }
+    }
     // currentIdx[k] tracks where originals[k] currently sits in the growing mainChain
     std::vector<size_t> currentIdx(mainChain.size());
     for (size_t i = 0; i < currentIdx.size(); ++i)
         currentIdx[i] = i;  // before any insertions, original[k] is at index k
 
+
+    std::cout << "local insertion order: ";
+    for (size_t i = 0; i < localInsertationOrder.size(); ++i)
+        std::cout << localInsertationOrder[i] << " ";
+    std::cout << "\n";
+
+    std::cout << "pending table:\n";
+    for (size_t i = 0; i < pending.size(); ++i)
+    {
+        std::cout << "  [" << i << "] ";
+        if (hasPending[i])
+            std::cout << pending[i].getNumber();
+        else
+            std::cout << "EMPTY";
+        std::cout << "\n";
+    }
     while (!localInsertationOrder.empty())
     {
         size_t k = localInsertationOrder.front();         // Jacobsthal-ordered index into originals
         localInsertationOrder.erase(localInsertationOrder.begin());
 
-        fjNum beta = originals.at(k).getPending().top();  // the loser that originals[k] beat
-        originals.at(k).pop_last_pending(); // remove it from pending since we're about to insert it into mainChain
+        std::cout << "\nTrying k=" << k << "\n";
 
+        if (k >= pending.size() || !hasPending[k])
+        {
+            std::cout << "SKIP k=" << k << " no pending\n";
+            continue;
+        }
+
+        fjNum beta = receivedPairs[k].beta;
+
+        std::cout << "Insert beta=" << beta.getNumber()
+                << " before alpha index k=" << k
+                << " currentIdx[k]=" << currentIdx[k]
+                << " alpha=" << mainChain[currentIdx[k]].getNumber()
+                << "\n";
 
         // originals[k] is the upper bound: beta < originals[k] is already known, no search needed
         typename Container::iterator upperBound = mainChain.begin() + currentIdx[k];
-        mainChain.at(currentIdx[k]).pop_last_pending(); // pop the pending element from the original before we do the binary search
         // binary search only within [begin, upperBound) — comparisons against unknown elements
-        typename Container::iterator pos = std::lower_bound(mainChain.begin(), upperBound, beta);
+        typename Container::iterator pos = std::lower_bound(mainChain.begin(), upperBound, beta, CountingComparator(comparisonCount));
 
         size_t insertedAt = pos - mainChain.begin();
         mainChain.insert(pos, beta);
+
+        std::cout << "Inserted at index " << insertedAt << "\n";
+        std::cout << "mainChain now: ";
+        for (size_t i = 0; i < mainChain.size(); ++i)
+            std::cout << mainChain[i].getNumber() << " ";
+        std::cout << "\n";
 
         // every original at or past the insertion point shifted right by one
         for (size_t i = 0; i < currentIdx.size(); ++i)

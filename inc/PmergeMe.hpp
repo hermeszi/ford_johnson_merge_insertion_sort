@@ -17,6 +17,7 @@ public:
     int run ();
     const std::vector<fjNum>& getSortV() const;
     //const std::deque<int>& getSortD() const;
+    static size_t comparisonCount; // for testing, to count number of comparisons made during sorting
 private:
     std::vector<int> input;
     std::vector<size_t> insertionOrder;

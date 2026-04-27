@@ -88,6 +88,7 @@ int main(int argc, char **argv)
         else
         {
             std::cout << "Vector and deque are sorted successfully" << std::endl;
+            std::cout << "Count of comparisons made during sorting: " << PmergeMe::comparisonCount << std::endl;
         }
     }
     catch (const std::exception &e)
