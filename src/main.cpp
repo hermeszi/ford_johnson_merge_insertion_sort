@@ -74,22 +74,6 @@ int main(int argc, char **argv)
     {
         PmergeMe sorter(input);
         sorter.run();
-        
-        if (!isSorted(sorter.getSortV()))
-        {
-            std::cerr << "Error: Vector container is not sorted" << std::endl;
-            return 1;
-        }
-        // else if (!isSorted(sorter.getSortD()))
-        // {
-        //     std::cerr << "Error: Deque container is not sorted" << std::endl;
-        //     return 1;
-        // }
-        else
-        {
-            std::cout << "Vector and deque are sorted successfully" << std::endl;
-            std::cout << "Count of comparisons made during sorting: " << PmergeMe::comparisonCount << std::endl;
-        }
     }
     catch (const std::exception &e)
     {

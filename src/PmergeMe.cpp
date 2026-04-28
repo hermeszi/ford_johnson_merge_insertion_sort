@@ -10,7 +10,18 @@
 #include "PmergeMe.hpp"
 #define MILLION 1000000
 
-size_t PmergeMe::comparisonCount = 0;
+
+bool PmergeMe::isVSorted() const
+{
+    if (sortV.size() != input.size())
+        return false;
+    for (size_t i = 1; i < sortV.size(); ++i)
+    {
+        if (sortV[i].getNumber() < sortV[i - 1].getNumber())
+            return false;
+    }
+    return true;
+}
 
 struct CountingComparator
 {
@@ -114,21 +125,34 @@ int PmergeMe::run ()
         }
         std::cout << std::endl;
         
+        PmergeMe::comparisonCount = 0; // reset comparison count before sorting
+
         clock_t startV = clock();
         this->sortVector();
         clock_t endV = clock();
         std::cout << "After  : " << sortV << std::endl;
+
+        if (!isVSorted())
+        {
+            std::cerr << "Error: Vector is not sorted correctly" << std::endl;
+            return 1;
+        }
+        else
+        {
+            std::cout << "Vector is sorted successfully" << std::endl;
+        }
+        double timeV = (static_cast<double>(endV - startV) / CLOCKS_PER_SEC) * MILLION;
+        std::cout   << "Time to process a range of " << size << " elements with std::vector : " 
+                    << std::fixed << timeV << " us" << std::endl;
+        std::cout   << "Number of comparisons made during sorting: " << this->comparisonCount << std::endl;
 
         // clock_t startD = clock();
         // this->sortDeque(); 
         // clock_t endD = clock();
         // //std::cout << "After (deque) : " << sortD << std::endl;
 
-        double timeV = (static_cast<double>(endV - startV) / CLOCKS_PER_SEC) * MILLION;
         //double timeD = (static_cast<double>(endD - startD) / CLOCKS_PER_SEC) * MILLION;
 
-        std::cout   << "Time to process a range of " << size << " elements with std::vector : " 
-                    << std::fixed << timeV << " us" << std::endl;
         // std::cout  << "Time to process a range of " << size << " elements with std::deque  : " 
         //            << std::fixed << timeD << " us" << std::endl;
     }
@@ -251,64 +275,74 @@ Container PmergeMe::FJSort(std::vector<PmergeMe::pair> &receivedPairs)
     // snapshot originals before any insertions -> Jacobsthal indices index into this
     
     //retrive the original fjNums that we need to insert from the pairs, and store them in the same order as mainChain so we can track where they are as we insert
-    std::vector<fjNum> pending(mainChain.size());
-    std::vector<bool> hasPending(mainChain.size(), false);
+    // std::vector<fjNum> pending(mainChain.size());
+    // std::vector<bool> hasPending(mainChain.size(), false);
 
-    for (size_t i = 0; i < mainChain.size(); ++i)
-    {
-        std::cout << "mainChain[" << i << "] alpha="
-                << mainChain[i].getNumber();
+    // //debug print to check the pending elements before insertion
+    // for (size_t i = 0; i < mainChain.size(); ++i)
+    // {
+    //     std::cout << "mainChain[" << i << "] alpha="
+    //             << mainChain[i].getNumber();
 
-        if (!mainChain.at(i).getPending().empty())
-        {
-            std::cout << " has pending beta="
-                    << mainChain.at(i).getPending().top().getNumber()
-                    << "\n";
+    //     if (!mainChain.at(i).getPending().empty())
+    //     {
+    //         std::cout << " has pending beta="
+    //                 << mainChain.at(i).getPending().top().getNumber()
+    //                 << "\n";
 
-            pending[i] = mainChain.at(i).getPending().top();
-            hasPending[i] = true;
-            mainChain.at(i).pop_last_pending();
-        }
-        else
-        {
-            std::cout << " has NO pending\n";
-        }
-    }
+    //         pending[i] = mainChain.at(i).getPending().top();
+    //         hasPending[i] = true;
+    //         mainChain.at(i).pop_last_pending();
+    //     }
+    //     else
+    //     {
+    //         std::cout << " has NO pending\n";
+    //     }
+    // }
     // currentIdx[k] tracks where originals[k] currently sits in the growing mainChain
     std::vector<size_t> currentIdx(mainChain.size());
     for (size_t i = 0; i < currentIdx.size(); ++i)
         currentIdx[i] = i;  // before any insertions, original[k] is at index k
 
+    // // == debug print to check if we tracked the pending elements correctly before insertion ==
+    // std::cout << "local insertion order: ";
+    // for (size_t i = 0; i < localInsertationOrder.size(); ++i)
+    //     std::cout << localInsertationOrder[i] << " ";
+    // std::cout << "\n";
 
-    std::cout << "local insertion order: ";
-    for (size_t i = 0; i < localInsertationOrder.size(); ++i)
-        std::cout << localInsertationOrder[i] << " ";
-    std::cout << "\n";
-
-    std::cout << "pending table:\n";
-    for (size_t i = 0; i < pending.size(); ++i)
-    {
-        std::cout << "  [" << i << "] ";
-        if (hasPending[i])
-            std::cout << pending[i].getNumber();
-        else
-            std::cout << "EMPTY";
-        std::cout << "\n";
-    }
+    // std::cout << "pending table:\n";
+    // for (size_t i = 0; i < pending.size(); ++i)
+    // {
+    //     std::cout << "  [" << i << "] ";
+    //     if (hasPending[i])
+    //         std::cout << pending[i].getNumber();
+    //     else
+    //         std::cout << "EMPTY";
+    //     std::cout << "\n";
+    // }
     while (!localInsertationOrder.empty())
     {
         size_t k = localInsertationOrder.front();         // Jacobsthal-ordered index into originals
         localInsertationOrder.erase(localInsertationOrder.begin());
 
-        std::cout << "\nTrying k=" << k << "\n";
+        // std::cout << "\nTrying k=" << k << "\n";
 
-        if (k >= pending.size() || !hasPending[k])
+        // if (k >= pending.size() || !hasPending[k])
+        // {
+        //     std::cout << "SKIP k=" << k << " no pending\n";
+        //     continue;
+        // }
+
+        size_t alphaIndex = currentIdx[k];
+
+        if (mainChain[alphaIndex].getPending().empty())
         {
-            std::cout << "SKIP k=" << k << " no pending\n";
+            std::cout << "SKIP: no pending for alpha "
+                    << mainChain[alphaIndex].getNumber() << "\n";
             continue;
         }
 
-        fjNum beta = receivedPairs[k].beta;
+        fjNum beta = mainChain[alphaIndex].popPending();
 
         std::cout << "Insert beta=" << beta.getNumber()
                 << " before alpha index k=" << k

@@ -42,7 +42,17 @@ public:
     void pop_last_pending()
     {
         if (!pending.empty())
-            pending.pop();
+            return pending.pop();
+    }
+    
+    fjNum popPending()
+    {
+        if (pending.empty())
+            throw std::runtime_error("No pending value to pop");
+
+        fjNum value = pending.top();
+        pending.pop();
+        return value;
     }
 
 private:    
